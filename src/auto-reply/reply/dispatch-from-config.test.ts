@@ -501,9 +501,10 @@ describe("dispatchReplyFromConfig", () => {
         replyResolver,
       });
 
-      // The context should have been mutated
+      // The context should have been mutated - including BodyForAgent (what AI sees)
       expect(ctx.BodyForCommands).toBe("modified message");
       expect(ctx.Body).toBe("modified message");
+      expect(ctx.BodyForAgent).toBe("modified message");
       expect(replyResolver).toHaveBeenCalled();
     });
 
