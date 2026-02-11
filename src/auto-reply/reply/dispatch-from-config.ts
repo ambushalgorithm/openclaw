@@ -203,6 +203,7 @@ export async function dispatchReplyFromConfig(params: {
       if (hookResult?.content !== undefined) {
         ctx.BodyForCommands = hookResult.content;
         ctx.Body = hookResult.content;
+        ctx.BodyForAgent = hookResult.content; // Also mutate what the AI sees (was missing!)
         // Note: ctx.RawBody is intentionally NOT modified to preserve original message
       }
     } catch (err) {
