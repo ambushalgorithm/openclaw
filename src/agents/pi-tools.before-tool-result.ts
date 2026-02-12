@@ -1,7 +1,6 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import { getGlobalHookRunner } from "../plugins/hook-runner-global.js";
 import { normalizeToolName } from "./tool-policy.js";
-import { jsonResult } from "./tools/common.js";
 
 type HookContext = {
   agentId?: string;
