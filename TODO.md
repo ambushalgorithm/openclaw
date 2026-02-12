@@ -12,39 +12,44 @@
 
 These are preparatory and research tasks that don't modify production code or architecture:
 
-- [ ] **Verify development environment**
-  - Run `npm install` to install dependencies
-  - Run `npm run build` to verify build compiles
-  - Run `npm test` to check test suite passes
+- [x] **Verify development environment**
+  - ✅ Run `npm install` — 792 packages installed successfully
+  - ✅ Run `npm run build` — Build completed, dist files generated
+  - ⏳ Run `npm test` — Pending (to verify)
   - **Purpose:** Ensure we can develop and test
 
-- [ ] **Study existing hook implementations**
-  - Read `src/plugins/types.ts` — understand hook type definitions
-  - Read `src/plugins/hooks.ts` — understand hook runner patterns
-  - Examine `before_tool_call` hook as reference
+- [x] **Study existing hook implementations**
+  - ✅ Read `src/plugins/types.ts` — Hook type patterns identified
+  - ✅ Read `src/plugins/hooks.ts` — Runner patterns identified
+  - ✅ Examine `before_tool_call` hook — Reference implementation studied
   - **Purpose:** Learn patterns for implementation
+  - **Output:** IMPLEMENTATION_NOTES.md created
 
 - [x] **Document hook timing analysis**
   - ✅ Confirmed `tool_result_persist` fires after LLM sees content
   - ✅ Identified gap: need hook between execution and LLM
   - **Purpose:** Justify the new hook
 
-- [ ] **Identify all tool execution entry points**
-  - Search for `tool.execute` calls
-  - Find SDK agent session code
-  - Identify where tool results flow to LLM
+- [x] **Identify all tool execution entry points**
+  - ✅ Found `toToolDefinitions` in `pi-tool-definition-adapter.ts` (line 86)
+  - ✅ Found `toClientToolDefinitions` (already has `before_tool_call`)
+  - ✅ Identified `tool.execute()` call at line 98 as injection point
   - **Purpose:** Determine best injection point (Option B assessment)
+  - **Conclusion:** Wrap in `toToolDefinitions`, same pattern as `before_tool_call`
 
-- [ ] **Review Knostic Shield implementation**
-  - Study how they handle tool output (for patterns to avoid)
-  - Note their L5 gate tool approach
+- [x] **Review Knostic Shield implementation**
+  - ✅ Studied their 5-layer architecture
+  - ✅ Noted their L5 gate tool pattern
+  - ✅ Documented their timing gap findings
   - **Purpose:** Learn from existing solutions
+  - **Output:** Incorporated into DESIGN.md comparison
 
-- [ ] **Draft implementation notes**
-  - Sketch type definitions
-  - Outline runner function
-  - Plan test strategy
+- [x] **Draft implementation notes**
+  - ✅ Type definitions sketched
+  - ✅ Runner function outlined
+  - ✅ Test strategy planned
   - **Purpose:** Prepare for authorization request
+  - **Output:** IMPLEMENTATION_NOTES.md with full plan
 
 ---
 
@@ -104,9 +109,9 @@ These steps modify OpenClaw core code and require explicit authorization before 
   - Approach: Wrap `tool.execute()` to intercept result before return
   - **Risk:** Medium (modifies execution flow)
   - **Authorization required:** Yes
-  
+
   **OR**
-  
+
 - [ ] **Option B: Handler Level**
   - Location: `src/agents/pi-embedded-subscribe.handlers.tools.ts` in `handleToolExecutionEnd`
   - Approach: Intercept result before it's passed to agent
@@ -211,26 +216,26 @@ After all above phases complete, verify:
 
 ## Decision Points Needing Authorization
 
-| Decision | Context | Default | Ask Before |
-|----------|---------|---------|------------|
-| Implement types | Phase 1 | Yes | First phase |
-| Implement runner | Phase 2 | Yes | Each phase |
-| Choose invocation site | Phase 3 | Option A (SDK wrapper) | Before coding |
-| Run tests | Phase 4 | Yes | Each test run |
-| Commit & push | Phase 7 | Yes | Before commit |
-| Create PR | Phase 7 | Yes | Before submission |
+| Decision               | Context | Default                | Ask Before        |
+| ---------------------- | ------- | ---------------------- | ----------------- |
+| Implement types        | Phase 1 | Yes                    | First phase       |
+| Implement runner       | Phase 2 | Yes                    | Each phase        |
+| Choose invocation site | Phase 3 | Option A (SDK wrapper) | Before coding     |
+| Run tests              | Phase 4 | Yes                    | Each test run     |
+| Commit & push          | Phase 7 | Yes                    | Before commit     |
+| Create PR              | Phase 7 | Yes                    | Before submission |
 
 ---
 
 ## Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Build breaks | Low | High | Run build after each phase, fix incrementally |
-| Tests fail | Medium | Medium | New tests only (no existing test changes) |
-| Breaking change | Low | High | Additive only, no changes to existing hooks |
-| Rejected by upstream | Possible | Low | We keep fork working, can use regardless |
-| Timeline slip | Medium | Low | Phased approach, input filtering works independently |
+| Risk                 | Likelihood | Impact | Mitigation                                           |
+| -------------------- | ---------- | ------ | ---------------------------------------------------- |
+| Build breaks         | Low        | High   | Run build after each phase, fix incrementally        |
+| Tests fail           | Medium     | Medium | New tests only (no existing test changes)            |
+| Breaking change      | Low        | High   | Additive only, no changes to existing hooks          |
+| Rejected by upstream | Possible   | Low    | We keep fork working, can use regardless             |
+| Timeline slip        | Medium     | Low    | Phased approach, input filtering works independently |
 
 ---
 
@@ -243,5 +248,5 @@ After all above phases complete, verify:
 
 ---
 
-*Last updated: 2026-02-11*  
-*Status: Awaiting authorization for Phase 1*
+_Last updated: 2026-02-11_  
+_Status: Awaiting authorization for Phase 1_
