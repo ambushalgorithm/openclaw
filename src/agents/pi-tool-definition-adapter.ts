@@ -8,6 +8,7 @@ import type { ClientToolDefinition } from "./pi-embedded-runner/run/params.js";
 import { logDebug, logError } from "../logger.js";
 import { isPlainObject } from "../utils.js";
 import { runBeforeToolCallHook } from "./pi-tools.before-tool-call.js";
+import { runBeforeToolResultHook } from "./pi-tools.before-tool-result.js";
 import { normalizeToolName } from "./tool-policy.js";
 import { jsonResult } from "./tools/common.js";
 
@@ -78,7 +79,10 @@ function splitToolExecuteArgs(args: ToolExecuteArgsAny): {
   };
 }
 
-export function toToolDefinitions(tools: AnyAgentTool[]): ToolDefinition[] {
+export function toToolDefinitions(
+  tools: AnyAgentTool[],
+  hookContext?: { agentId?: string; sessionKey?: string },
+): ToolDefinition[] {
   return tools.map((tool) => {
     const name = tool.name || "tool";
     const normalizedName = normalizeToolName(name);
@@ -89,9 +93,33 @@ export function toToolDefinitions(tools: AnyAgentTool[]): ToolDefinition[] {
       parameters: tool.parameters,
       execute: async (...args: ToolExecuteArgs): Promise<AgentToolResult<unknown>> => {
         const { toolCallId, params, onUpdate, signal } = splitToolExecuteArgs(args);
+        const startMs = Date.now();
         try {
-          return await tool.execute(toolCallId, params, signal, onUpdate);
+          const result = await tool.execute(toolCallId, params, signal, onUpdate);
+          const durationMs = Date.now() - startMs;
+
+          // Run before_tool_result hook to allow plugins to modify or block the result
+          const outcome = await runBeforeToolResultHook({
+            toolName: name,
+            params,
+            toolCallId,
+            result,
+            isError: false,
+            durationMs,
+            ctx: hookContext,
+          });
+
+          if (outcome.blocked) {
+            return jsonResult({
+              status: "blocked",
+              tool: normalizedName,
+              error: outcome.reason,
+            });
+          }
+
+          return outcome.result;
         } catch (err) {
+          const durationMs = Date.now() - startMs;
           if (signal?.aborted) {
             throw err;
           }
@@ -107,11 +135,38 @@ export function toToolDefinitions(tools: AnyAgentTool[]): ToolDefinition[] {
             logDebug(`tools: ${normalizedName} failed stack:\n${described.stack}`);
           }
           logError(`[tools] ${normalizedName} failed: ${described.message}`);
-          return jsonResult({
+
+          // Run before_tool_result hook for error results too
+          const errorResult = jsonResult({
             status: "error",
             tool: normalizedName,
             error: described.message,
           });
+
+          try {
+            const outcome = await runBeforeToolResultHook({
+              toolName: name,
+              params,
+              toolCallId,
+              result: errorResult,
+              isError: true,
+              durationMs,
+              ctx: hookContext,
+            });
+
+            if (outcome.blocked) {
+              return jsonResult({
+                status: "blocked",
+                tool: normalizedName,
+                error: outcome.reason,
+              });
+            }
+
+            return outcome.result;
+          } catch {
+            // If hook fails, fall back to original error result
+            return errorResult;
+          }
         }
       },
     } satisfies ToolDefinition;
