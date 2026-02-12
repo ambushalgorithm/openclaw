@@ -80,5 +80,21 @@
     "auth": { "mode": "token", "token": "dev-token-12345" },
     "tailscale": { "mode": "off", "resetOnExit": false }
   },
-  "skills": { "install": { "nodeManager": "pnpm" } }
+  "skills": { "install": { "nodeManager": "pnpm" } },
+  "plugins": {
+    "load": {
+      "paths": ["/home/node/.openclaw/plugins/test-hooks"]
+    },
+    "entries": {
+      "test-hooks": {
+        "enabled": true,
+        "config": {
+          "logFilePath": "/home/node/.openclaw/workspace/hook-events.log",
+          "maxEvents": 100,
+          "modifyContent": false,
+          "blockTool": ""
+        }
+      }
+    }
+  }
 }

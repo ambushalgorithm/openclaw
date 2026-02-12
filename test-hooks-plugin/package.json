@@ -1,0 +1,15 @@
+{
+  "name": "test-hooks-plugin",
+  "version": "1.0.0",
+  "description": "Test plugin for capturing before_tool_result hook events",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

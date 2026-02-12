@@ -1,0 +1,1 @@
+{"hookName":"before_tool_result","timestamp":"2026-02-12T04:08:25.520Z","toolName":"test-tool","toolCallId":"call-123","params":{"arg":"value"},"contentType":"object","isError":false,"durationMs":100,"wasModified":false,"wasBlocked":false}

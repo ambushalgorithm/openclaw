@@ -1,0 +1,29 @@
+{
+  "id": "test-hooks",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "logFilePath": {
+        "type": "string",
+        "description": "Path to log file for captured hook events",
+        "default": "/home/node/.openclaw/workspace/hook-events.log"
+      },
+      "maxEvents": {
+        "type": "number",
+        "description": "Maximum events to keep in memory",
+        "default": 100
+      },
+      "modifyContent": {
+        "type": "boolean",
+        "description": "Whether to modify tool result content for testing",
+        "default": false
+      },
+      "blockTool": {
+        "type": "string",
+        "description": "Tool name to block for testing",
+        "default": ""
+      }
+    }
+  }
+}
