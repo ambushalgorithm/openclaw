@@ -188,26 +188,7 @@ export function toToolDefinitions(
             error: described.message,
           });
 
-          // Call after_tool_call hook for errors too
-          const hookRunner = getGlobalHookRunner();
-          if (hookRunner?.hasHooks("after_tool_call")) {
-            try {
-              await hookRunner.runAfterToolCall(
-                {
-                  toolName: normalizedName,
-                  params: isPlainObject(params) ? params : {},
-                  error: described.message,
-                },
-                { toolName: normalizedName },
-              );
-            } catch (hookErr) {
-              logDebug(
-                `after_tool_call hook failed: tool=${normalizedName} error=${String(hookErr)}`,
-              );
-            }
-          }
-
-          // Run before_tool_result hook for error results too
+          // Run before_tool_result hook for error results first
           try {
             const outcome = await runBeforeToolResultHook({
               toolName: normalizedName,
@@ -227,11 +208,33 @@ export function toToolDefinitions(
               });
             }
 
-            return outcome.result;
+            // Use the potentially modified result from the hook
+            errorResult.content = outcome.result.content;
+            errorResult.details = outcome.result.details;
           } catch {
             // If hook fails, fall back to original error result
-            return errorResult;
           }
+
+          // Call after_tool_call hook for errors too
+          const hookRunner = getGlobalHookRunner();
+          if (hookRunner?.hasHooks("after_tool_call")) {
+            try {
+              await hookRunner.runAfterToolCall(
+                {
+                  toolName: normalizedName,
+                  params: isPlainObject(params) ? params : {},
+                  error: described.message,
+                },
+                { toolName: normalizedName },
+              );
+            } catch (hookErr) {
+              logDebug(
+                `after_tool_call hook failed: tool=${normalizedName} error=${String(hookErr)}`,
+              );
+            }
+          }
+
+          return errorResult;
         }
       },
     } satisfies ToolDefinition;
