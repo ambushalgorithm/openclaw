@@ -1,6 +1,9 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
+import { createSubsystemLogger } from "../logging/subsystem.js";
 import { getGlobalHookRunner } from "../plugins/hook-runner-global.js";
 import { normalizeToolName } from "./tool-policy.js";
+
+const log = createSubsystemLogger("agents/tools");
 
 type HookContext = {
   agentId?: string;
@@ -62,8 +65,8 @@ export async function runBeforeToolResultHook(args: {
     }
   } catch (err) {
     const toolCallId = args.toolCallId ? ` toolCallId=${args.toolCallId}` : "";
-    console.warn(
-      `[hooks] before_tool_result hook failed: tool=${toolName}${toolCallId} error=${String(err)}`,
+    log.warn(
+      `before_tool_result hook failed: tool=${toolName}${toolCallId} error=${String(err)}`,
     );
   }
 

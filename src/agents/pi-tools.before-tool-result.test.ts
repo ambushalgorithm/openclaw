@@ -12,6 +12,15 @@ vi.mock("./tool-policy.js", () => ({
   normalizeToolName: (name: string) => name.toLowerCase().replace(/\s+/g, "-"),
 }));
 
+vi.mock("../logging/subsystem.js", () => ({
+  createSubsystemLogger: () => ({
+    warn: (...args: unknown[]) => console.warn(...args),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+  }),
+}));
+
 // Mock console.warn to suppress expected warnings in tests
 const originalWarn = console.warn;
 
