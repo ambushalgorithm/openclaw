@@ -210,7 +210,7 @@ export function toToolDefinitions(
           // Run before_tool_result hook for error results too
           try {
             const outcome = await runBeforeToolResultHook({
-              toolName: name,
+              toolName: normalizedName,
               params,
               toolCallId,
               result: errorResult,
